@@ -3,7 +3,7 @@
 %% @end
 %%%-------------------------------------------------------------------
 
--module(image-auto-tagger_sup).
+-module(image_auto_tagger_sup).
 
 -behaviour(supervisor).
 
