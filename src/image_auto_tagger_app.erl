@@ -11,15 +11,11 @@
 
 start(_StartType, _StartArgs) ->
     {ok, Pid} = image_auto_tagger_sup:start_link(),
-    Routes = [ {
-     '_',
-    [
-      {"/", basic_api, []}
-    ]}],
+    Routes = [{'_', [{"/", basic_api, []}]}],
     Dispatch = cowboy_router:compile(Routes),
-    TransOpts = [ {ip, {0,0,0,0}}, {port, 8888} ],
+    TransOpts = [{ip, {0, 0, 0, 0}}, {port, 8888}],
     ProtoOpts = #{env => #{dispatch => Dispatch}},
-    {ok, _} = cowboy:start_clear(image_auto_tagger,TransOpts, ProtoOpts),
+    {ok, _} = cowboy:start_clear(image_auto_tagger, TransOpts, ProtoOpts),
     {ok, Pid}.
 
 stop(_State) ->

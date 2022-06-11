@@ -1,16 +1,11 @@
-{application, 'image_auto_tagger',
+{application,
+ image_auto_tagger,
  [{description, "An OTP application"},
   {vsn, "0.1.0"},
   {registered, []},
   {mod, {image_auto_tagger_app, []}},
-  {applications,
-   [kernel,
-    stdlib,
-    cowboy
-   ]},
-  {env,[]},
+  {applications, [kernel, stdlib, cowboy]},
+  {env, []},
   {modules, []},
-
   {licenses, ["Apache 2.0"]},
-  {links, []}
- ]}.
+  {links, []}]}.
