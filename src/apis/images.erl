@@ -16,26 +16,17 @@ content_types_accepted(Req, State) ->
     {[{<<"application/json">>, handler}], Req, State}.
 
 handler(Req, State) ->
-    case cowboy_req:method(Req) of
-        <<"POST">> ->
-            post(Req, State);
-        <<"GET">> ->
-            case cowboy_req:binding(image_id, Req) of
-                undefined ->
-                    get(Req, State);
-                ImageId ->
-                    get(Req, ImageId, State)
-            end
-    end.
+    process_request(cowboy_req:method(Req), Req, State).
 
-post(Req, State) ->
+process_request(<<"POST">>, Req, State) ->
     Resp = cowboy_req:set_resp_body(<<"{\"a\":\"b\"}">>, Req),
     cowboy_req:reply(201, Resp),
-    {stop, Resp, State}.
+    {stop, Resp, State};
+process_request(<<"GET">>, Req, State) ->
+    process_get_request(cowboy_req:binding(image_id, Req), Req, State).
 
-get(Req, State) ->
-    #{id := ID, lang := Lang} = cowboy_req:match_qs([{objects, [], <<"1">>}], Req),
-    {<<"{\"a\":\"b\"}">>, Req, State}.
-
-get(Req, ImageId, State) ->
-    {<<"{\"a\":\"b\"}">>, Req, State}.
+process_get_request(undefined, Req, State) ->
+    #{objects := Objects} = cowboy_req:match_qs([{objects, [], <<"1">>}], Req),
+    {Objects, Req, State};
+process_get_request(ImageId, Req, State) ->
+    {ImageId, Req, State}.
