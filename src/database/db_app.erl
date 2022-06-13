@@ -58,7 +58,7 @@ get_all_tags() ->
     Result.
 
 init([]) ->
-    {ok, Conn} = db_client:connect(1, 2),
+    {ok, Conn} = db_client:connect([], 5000),
     {ok, #state{connection = Conn}}.
 
 handle_call(Statement, _From, #state{connection = Conn} = State) ->
