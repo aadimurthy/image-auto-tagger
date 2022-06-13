@@ -32,35 +32,78 @@ stote_image_tag_associations(ImageId, TagId, Confidence) ->
 get_tags_by_imageId(ImageId) ->
     {selected, Tags} =
         gen_server:call(?MODULE,
-                        {"SELECT b.tag, c.confidence FROM image_tags b, image_tag_associations c WHERE c.image_id = $1 AND b.id = c.tag_id ORDER BY c.confidence DESC;		",
+                        {
+            "SELECT b.tag,
+                    c.confidence
+             FROM   image_tags b,
+                    image_tag_associations c
+             WHERE  c.image_id = $1
+                    AND b.id = c.tag_id
+             ORDER  BY c.confidence DESC; ",
                          [binary_to_integer(ImageId)]}),
     Tags.
 
 get_images_by_tag(TagName) ->
     {selected, Result} =
         gen_server:call(?MODULE,
-                        {" SELECT b.tag, c.confidence, u.image_url, u.image_name, u.id FROM image_tags b, image_tag_associations c, uploaded_images u WHERE c.image_id = u.id AND c.tag_id = b.id AND b.tag = $1 ORDER BY c.confidence DESC;",
+                        {
+                "SELECT b.tag,
+                        c.confidence,
+                        u.image_url,
+                        u.image_name,
+                        u.id
+                 FROM   image_tags b,
+                        image_tag_associations c,
+                        uploaded_images u
+                 WHERE  c.image_id = u.id
+                        AND c.tag_id = b.id
+                        AND b.tag = $1
+                 ORDER  BY c.confidence DESC; ",
                          [TagName]}),
     Result.
 
 get_image_info_by_imageId(ImageId) ->
     {selected, [Result]} =
         gen_server:call(?MODULE,
-                        {"SELECT image_url, image_name, is_detection_enabled FROM uploaded_images WHERE id=$1;",
+                        {
+                "SELECT image_url,
+                        image_name,
+                        is_detection_enabled
+                 FROM   uploaded_images
+                 WHERE  id =$1; ",
                          [binary_to_integer(ImageId)]}),
     Result.
 
 get_tags_group_by_image() ->
     {selected, Result} =
         gen_server:call(?MODULE,
-                        {" select string_agg(b.tag, ', '), u.image_url, u.image_name, u.is_detection_enabled, u.id from image_tags b, image_tag_associations c, uploaded_images u where c.image_id = u.id and b.id = c.tag_id group by u.id, u.image_url, u.image_name;",
+                        {
+                "SELECT String_agg(b.tag, ', '),
+                        u.image_url,
+                        u.image_name,
+                        u.is_detection_enabled,
+                        u.id
+                 FROM   image_tags b,
+                        image_tag_associations c,
+                        uploaded_images u
+                 WHERE  c.image_id = u.id
+                        AND b.id = c.tag_id
+                 GROUP  BY u.id,
+                           u.image_url,
+                           u.image_name;",
                          []}),
     Result.
 
 get_untagged_images() ->
     {selected, Result} =
         gen_server:call(?MODULE,
-                        {"SELECT id,image_url, image_name FROM uploaded_images WHERE is_detection_enabled=false;",
+                        {
+                    
+                "SELECT id,
+                        image_url,
+                        image_name
+                 FROM   uploaded_images
+                 WHERE  is_detection_enabled = FALSE; ",
                          []}),
     Result.
 
