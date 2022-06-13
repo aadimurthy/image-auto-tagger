@@ -20,7 +20,6 @@ handler(Req, State) ->
 
 process_request(<<"POST">>, Req, State) ->
     process_post_request(cowboy_req:has_body(Req), Req, State);
-
 process_request(<<"GET">>, Req, State) ->
     process_get_request(cowboy_req:binding(image_id, Req), Req, State).
 

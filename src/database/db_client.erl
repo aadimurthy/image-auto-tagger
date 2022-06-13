@@ -25,8 +25,8 @@ db_opts(Options) ->
 disconnect(Connection) ->
     epgsql:close(Connection).
 
-query(Connection, Query, _Timeout) ->
-    pgsql_to_rdbms(epgsql:squery(Connection, Query)).
+query(Connection, {Statment, Values}, _Timeout) ->
+    pgsql_to_rdbms(epgsql:equery(Connection, Statment, Values)).
 
 pgsql_to_rdbms(Items) when is_list(Items) ->
     lists:reverse([pgsql_to_rdbms(Item) || Item <- Items]);
