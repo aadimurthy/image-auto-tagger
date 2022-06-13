@@ -30,9 +30,15 @@ process_post_request(false, Req, State) ->
 process_post_request(true, Req, State) ->
     {ok, JsonData, _} = cowboy_req:read_body(Req),
     Data = jsx:decode(JsonData, [{return_maps, false}]),
-    [Uri, IsdetectionEnabled, Label] =
+    [Uri, IsdetectionEnabled] =
         [proplists:get_value(Param, Data, undefined)
-         || Param <- [<<"uri">>, <<"IsdetectionEnabled">>, <<"label">>]],
+         || Param <- [<<"uri">>, <<"isDetectionEnabled">>]],
+
+    Label =
+        proplists:get_value(<<"label">>,
+                            Data,
+                            base64:encode(
+                                crypto:strong_rand_bytes(8))),
 
     case Uri of
         undefined ->
@@ -40,9 +46,10 @@ process_post_request(true, Req, State) ->
             Resp = cowboy_req:set_resp_body(ErrorMsg, Req),
             {false, Resp, State};
         _ ->
-            ImageId = process_image:start(Uri, IsdetectionEnabled, Label),
-            Message = jsx:encode([{<<"uri">>, Uri}, {<<"imageId">>, ImageId}]),
-            Resp = cowboy_req:set_resp_body(Message, Req),
+            ImageData = process_image:start(Uri, IsdetectionEnabled, Label),
+            Resp =
+                cowboy_req:set_resp_body(
+                    jsx:encode(ImageData), Req),
             {false, Resp, State}
     end.
 

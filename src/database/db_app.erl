@@ -5,19 +5,19 @@
 -export([start_link/0]).
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3,
-         store_uploaded_image_info/2, store_tag_info/2, stote_image_tag_associations/3,
-         get_tags_by_imageId/1, get_label_and_url_by_imageId/1, get_images_by_tag/1,
-         get_all_tags/0]).
+         store_uploaded_image_info/3, store_tag_info/2, stote_image_tag_associations/3,
+         get_tags_by_imageId/1, get_image_info_by_imageId/1, get_images_by_tag/1,
+         get_tags_group_by_image/0, get_untagged_images/0]).
 
 -record(state, {connection}).
 
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-store_uploaded_image_info(Uri, Label) ->
+store_uploaded_image_info(Uri, Label, IsDetectionEnabled) ->
     gen_server:call(?MODULE,
-                    {"INSERT INTO uploaded_images(filename, fileurl) VALUES($1, $2) RETURNING id;",
-                     [Uri, Label]}).
+                    {"INSERT INTO uploaded_images(image_name, image_url, is_detection_enabled) VALUES($1, $2, $3) RETURNING id ;",
+                     [Label, Uri, IsDetectionEnabled]}).
 
 store_tag_info(TagName, Langugue) ->
     gen_server:call(?MODULE,
@@ -39,21 +39,28 @@ get_tags_by_imageId(ImageId) ->
 get_images_by_tag(TagName) ->
     {selected, Result} =
         gen_server:call(?MODULE,
-                        {" SELECT b.tag, c.confidence, u.fileurl, u.filename, u.id FROM image_tags b, image_tag_associations c, uploaded_images u WHERE c.image_id = u.id AND c.tag_id = b.id AND b.tag = $1 ORDER BY c.confidence DESC;",
+                        {" SELECT b.tag, c.confidence, u.image_url, u.image_name, u.id FROM image_tags b, image_tag_associations c, uploaded_images u WHERE c.image_id = u.id AND c.tag_id = b.id AND b.tag = $1 ORDER BY c.confidence DESC;",
                          [TagName]}),
     Result.
 
-get_label_and_url_by_imageId(ImageId) ->
+get_image_info_by_imageId(ImageId) ->
     {selected, [Result]} =
         gen_server:call(?MODULE,
-                        {"SELECT fileurl, filename FROM uploaded_images WHERE id=$1;",
+                        {"SELECT image_url, image_name, is_detection_enabled FROM uploaded_images WHERE id=$1;",
                          [binary_to_integer(ImageId)]}),
     Result.
 
-get_all_tags() ->
+get_tags_group_by_image() ->
     {selected, Result} =
         gen_server:call(?MODULE,
-                        {" SELECT b.tag, c.confidence, c.image_id, u.fileurl, u.filename, u.id FROM image_tags b, image_tag_associations c, uploaded_images u WHERE c.image_id = u.id AND b.id = c.tag_id ORDER BY c.confidence DESC;",
+                        {" select string_agg(b.tag, ', '), u.image_url, u.image_name, u.is_detection_enabled, u.id from image_tags b, image_tag_associations c, uploaded_images u where c.image_id = u.id and b.id = c.tag_id group by u.id, u.image_url, u.image_name;",
+                         []}),
+    Result.
+
+get_untagged_images() ->
+    {selected, Result} =
+        gen_server:call(?MODULE,
+                        {"SELECT id,image_url, image_name FROM uploaded_images WHERE is_detection_enabled=false;",
                          []}),
     Result.
 

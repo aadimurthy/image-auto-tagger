@@ -2,11 +2,14 @@
 
 -export([start/3]).
 
-start(Uri, IsDetectionEnabled, Label) ->
-    {updated, 1, [{ImageId}]} = db_app:store_uploaded_image_info(Uri, Label),
+start(Uri, true, Label) ->
+    {updated, 1, [{ImageId}]} = db_app:store_uploaded_image_info(Uri, Label, true),
     #{<<"tags">> := TagInfoList} = imagga_client:tag_image(Uri),
     [process_each_tag(TagInfo, ImageId) || TagInfo <- TagInfoList],
-    ImageId.
+    fetch_images:by_id(list_to_binary(integer_to_list(ImageId)));
+start(Uri, false, Label) ->
+    {updated, 1, [{ImageId}]} = db_app:store_uploaded_image_info(Uri, Label, false),
+    fetch_images:by_id(list_to_binary(integer_to_list(ImageId))).
 
 process_each_tag(TagInfo, ImageId) ->
     #{<<"confidence">> := Confidence, <<"tag">> := Tag} = TagInfo,

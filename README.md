@@ -7,8 +7,8 @@ use image_auto_tagger;
 
 create table uploaded_images
 (id INT  NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-filename varchar(100) NOT NULL,
-fileurl  varchar(100) NOT NULL);
+image_name varchar(100) NOT NULL,
+image_url  varchar(100) NOT NULL);
 
 create table image_tags
 (id INT  NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

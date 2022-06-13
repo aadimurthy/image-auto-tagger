@@ -4,9 +4,10 @@
 
 by_id(ImageId) ->
     Tags = db_app:get_tags_by_imageId(ImageId),
-    {ImageUri, ImageLabel} = db_app:get_label_and_url_by_imageId(ImageId),
+    {ImageUri, ImageLabel, IsDetectionEnabled} = db_app:get_image_info_by_imageId(ImageId),
     #{imageUri => ImageUri,
       imageLabel => ImageLabel,
+      isDetectionEnabled => IsDetectionEnabled,
       tags => Tags}.
 
 by_tags(Tags) ->
@@ -23,10 +24,21 @@ by_tags(Tags) ->
      || {Tag, Confidence, ImageUri, ImageLable, ImageID} <- Records].
 
 all() ->
-    Records = db_app:get_all_tags(),
-    [#{imageId => ImageID,
-       imageUri => ImageUri,
-       imageLable => ImageLable,
-       confidence => Confidence,
-       tag => Tag}
-     || {Tag, Confidence, ImageID, ImageLable, ImageUri, _} <- Records].
+    TaggedRecords = db_app:get_tags_group_by_image(),
+    UntaggedRecords = db_app:get_untagged_images(),
+    TaggedResult =
+        [#{imageId => ImageID,
+           imageUri => ImageUri,
+           imageLable => ImageLable,
+           isDetectionEnabled => true,
+           tags => Tags}
+         || {Tags, ImageUri, ImageLable, Confidence, ImageID} <- TaggedRecords],
+
+    UntaggedResult =
+        [#{imageId => ImageID,
+           imageUri => ImageUri,
+           imageLable => ImageLable,
+           isDetectionEnabled => true,
+           tags => []}
+         || {ImageID, ImageUri, ImageLable} <- UntaggedRecords],
+    TaggedResult ++ UntaggedResult.
