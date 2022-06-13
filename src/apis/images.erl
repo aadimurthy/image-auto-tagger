@@ -50,4 +50,5 @@ process_get_request(undefined, Req, State) ->
     #{objects := Objects} = cowboy_req:match_qs([{objects, [], <<"1">>}], Req),
     {Objects, Req, State};
 process_get_request(ImageId, Req, State) ->
-    {ImageId, Req, State}.
+    ImageData = fetch_images:by_id(ImageId),
+    {jsx:encode(ImageData), Req, State}.
