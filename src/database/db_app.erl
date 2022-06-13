@@ -6,7 +6,8 @@
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3,
          store_uploaded_image_info/2, store_tag_info/2, stote_image_tag_associations/3,
-         get_tags_by_imageId/1, get_label_and_url_by_imageId/1]).
+         get_tags_by_imageId/1, get_label_and_url_by_imageId/1, get_images_by_tag/1,
+         get_all_tags/0]).
 
 -record(state, {connection}).
 
@@ -35,10 +36,25 @@ get_tags_by_imageId(ImageId) ->
                          [binary_to_integer(ImageId)]}),
     Tags.
 
+get_images_by_tag(TagName) ->
+    {selected, Result} =
+        gen_server:call(?MODULE,
+                        {" SELECT b.tag, c.confidence, u.fileurl, u.filename, u.id FROM image_tags b, image_tag_associations c, uploaded_images u WHERE c.image_id = u.id AND c.tag_id = b.id AND b.tag = $1 ORDER BY c.confidence DESC;",
+                         [TagName]}),
+    hd(Result).
+
 get_label_and_url_by_imageId(ImageId) ->
     {selected, [Result]} =
         gen_server:call(?MODULE,
-                        {"SELECT fileurl, filename FROM uploaded_images WHERE id=$1;", [binary_to_integer(ImageId)]}),
+                        {"SELECT fileurl, filename FROM uploaded_images WHERE id=$1;",
+                         [binary_to_integer(ImageId)]}),
+    Result.
+
+get_all_tags() ->
+    {selected, Result} =
+        gen_server:call(?MODULE,
+                        {" SELECT b.tag, c.confidence, c.image_id, u.fileurl, u.filename, u.id FROM image_tags b, image_tag_associations c, uploaded_images u WHERE c.image_id = u.id AND b.id = c.tag_id ORDER BY c.confidence DESC;",
+                         []}),
     Result.
 
 init([]) ->

@@ -40,15 +40,24 @@ process_post_request(true, Req, State) ->
             Resp = cowboy_req:set_resp_body(ErrorMsg, Req),
             {false, Resp, State};
         _ ->
-            process_image:start(Uri, IsdetectionEnabled, Label),
-            Message = jsx:encode([{<<"uri">>, Uri}]),
+            ImageId = process_image:start(Uri, IsdetectionEnabled, Label),
+            Message = jsx:encode([{<<"uri">>, Uri}, {<<"imageId">>, ImageId}]),
             Resp = cowboy_req:set_resp_body(Message, Req),
             {false, Resp, State}
     end.
 
 process_get_request(undefined, Req, State) ->
-    #{objects := Objects} = cowboy_req:match_qs([{objects, [], <<"1">>}], Req),
-    {Objects, Req, State};
+    #{objects := Objects} = cowboy_req:match_qs([{objects, [], empty}], Req),
+    case Objects of
+        empty ->
+            ImageData = fetch_images:all(),
+            {jsx:encode(ImageData), Req, State};
+        _ ->
+            ImageData =
+                fetch_images:by_tags(
+                    jsx:decode(Objects)),
+            {jsx:encode(ImageData), Req, State}
+    end;
 process_get_request(ImageId, Req, State) ->
     ImageData = fetch_images:by_id(ImageId),
     {jsx:encode(ImageData), Req, State}.

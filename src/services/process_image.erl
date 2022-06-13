@@ -5,7 +5,8 @@
 start(Uri, IsDetectionEnabled, Label) ->
     {updated, 1, [{ImageId}]} = db_app:store_uploaded_image_info(Uri, Label),
     #{<<"tags">> := TagInfoList} = imagga_client:tag_image(Uri),
-    [process_each_tag(TagInfo, ImageId) || TagInfo <- TagInfoList].
+    [process_each_tag(TagInfo, ImageId) || TagInfo <- TagInfoList],
+    ImageId.
 
 process_each_tag(TagInfo, ImageId) ->
     #{<<"confidence">> := Confidence, <<"tag">> := Tag} = TagInfo,
