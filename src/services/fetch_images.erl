@@ -11,7 +11,10 @@ by_id(ImageId) ->
 
 by_tags(Tags) ->
     TagsList = string:tokens(binary_to_list(Tags), ","),
-    Records = [db_app:get_images_by_tag(Tag) || Tag <- TagsList],
+    Records =
+        lists:foldl(fun(Tag, Result) -> Result ++ db_app:get_images_by_tag(Tag) end,
+                    [],
+                    TagsList),
     [#{imageId => ImageID,
        imageUri => ImageUri,
        imageLable => ImageLable,

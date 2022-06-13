@@ -41,7 +41,7 @@ get_images_by_tag(TagName) ->
         gen_server:call(?MODULE,
                         {" SELECT b.tag, c.confidence, u.fileurl, u.filename, u.id FROM image_tags b, image_tag_associations c, uploaded_images u WHERE c.image_id = u.id AND c.tag_id = b.id AND b.tag = $1 ORDER BY c.confidence DESC;",
                          [TagName]}),
-    hd(Result).
+    Result.
 
 get_label_and_url_by_imageId(ImageId) ->
     {selected, [Result]} =
