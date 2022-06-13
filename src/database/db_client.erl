@@ -1,4 +1,5 @@
--module(pgsql_client).
+-module(db_client).
+
 -include_lib("epgsql/include/epgsql.hrl").
 
 -export([connect/2, disconnect/1, query/3]).
@@ -18,7 +19,7 @@ db_opts(Options) ->
       username => "postgres",
       password => "password",
       database => "image_auto_tagger",
-      port =>     5432,
+      port => 5432,
       timeout => 4000}.
 
 disconnect(Connection) ->

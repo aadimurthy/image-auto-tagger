@@ -15,6 +15,7 @@ start(_StartType, _StartArgs) ->
     Dispatch = cowboy_router:compile(Routes),
     TransOpts = [{ip, {0, 0, 0, 0}}, {port, 8888}],
     ProtoOpts = #{env => #{dispatch => Dispatch}},
+    {ok, _} = db_app:start_link(),
     {ok, _} = cowboy:start_clear(image_auto_tagger, TransOpts, ProtoOpts),
     {ok, Pid}.
 
