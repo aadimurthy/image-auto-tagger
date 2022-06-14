@@ -7,7 +7,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3,
          store_uploaded_image_info/3, store_tag_info/2, stote_image_tag_associations/3,
          get_tags_by_imageId/1, get_image_info_by_imageId/1, get_images_by_tag/1,
-         get_tags_group_by_image/0, get_untagged_images/0]).
+         get_tags_group_by_image/0, get_untagged_images/0, get_tag_count/0]).
 
 -record(state, {connection}).
 
@@ -105,6 +105,10 @@ get_untagged_images() ->
                  FROM   uploaded_images
                  WHERE  is_detection_enabled = FALSE; ",
                          []}),
+    Result.
+
+get_tag_count()->
+    {selected, Result} =gen_server:call(?MODULE,{"select count(*) from image_tags;", []}),
     Result.
 
 init([]) ->
